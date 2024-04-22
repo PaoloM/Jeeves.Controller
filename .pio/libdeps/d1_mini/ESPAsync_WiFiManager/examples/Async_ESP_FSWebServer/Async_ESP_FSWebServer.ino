@@ -34,19 +34,15 @@
   #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.15.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1015000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.11.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1011000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
 
-// To not display stored SSIDs and PWDs on Config Portal, select false. Default is true
-// Even the stored Credentials are not display, just leave them all blank to reconnect and reuse the stored Credentials 
-//#define DISPLAY_STORED_CREDENTIALS_IN_CP        false
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#include <ESPAsyncDNSServer.h>
+#include <DNSServer.h>
 #include <ESP8266mDNS.h>
 
 // From v1.1.0
@@ -60,7 +56,7 @@ ESP8266WiFiMulti wifiMulti;
 //#define FORMAT_FILESYSTEM       true
 #define FORMAT_FILESYSTEM       false
 
-#define USE_LITTLEFS            true
+#define USE_LITTLEFS          true
 
 #if USE_LITTLEFS
   #include <LittleFS.h>
@@ -68,8 +64,6 @@ ESP8266WiFiMulti wifiMulti;
   #define FileFS    LittleFS
   #define FS_Name       "LittleFS"
 #else
-  #include <SPIFFSEditor.h>
-  
   FS* filesystem = &SPIFFS;
   #define FileFS    SPIFFS
   #define FS_Name       "SPIFFS"
@@ -77,6 +71,8 @@ ESP8266WiFiMulti wifiMulti;
 
 #define LED_ON      LOW
 #define LED_OFF     HIGH
+
+#include <SPIFFSEditor.h>
 
 #define ESP_getChipId()   (ESP.getChipId())
 
@@ -162,39 +158,41 @@ bool initialConfig = false;
 
 #define USING_CORS_FEATURE          true
 
-
-////////////////////////////////////////////
+// Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
+#if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
+// Force DHCP to be true
+#if defined(USE_DHCP_IP)
+#undef USE_DHCP_IP
+#endif
+#define USE_DHCP_IP     true
+#else
+// You can select DHCP or Static IP here
+//#define USE_DHCP_IP     true
+#define USE_DHCP_IP     false
+#endif
 
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
-  // Force DHCP to be true
+// Force DHCP to be true
   #if defined(USE_DHCP_IP)
     #undef USE_DHCP_IP
   #endif
   #define USE_DHCP_IP     true
 #else
   // You can select DHCP or Static IP here
-  #define USE_DHCP_IP     true
-  //#define USE_DHCP_IP     false
+  //#define USE_DHCP_IP     true
+  #define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using DHCP IP
-  #endif
-  
+  #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
-  
 #else
   // Use static IP
-  
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using static IP
-  #endif
+  #warning Using static IP
   
   #ifdef ESP32
     IPAddress stationIP   = IPAddress(192, 168, 2, 232);
@@ -205,9 +203,6 @@ bool initialConfig = false;
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
-
-////////////////////////////////////////////
-
 
 #define USE_CONFIGURABLE_DNS      true
 
@@ -230,7 +225,7 @@ String host = "async-esp8266fs";
 #define HTTP_PORT     80
 
 AsyncWebServer server(HTTP_PORT);
-AsyncDNSServer dnsServer;
+DNSServer dnsServer;
 
 AsyncEventSource events("/events");
 
@@ -762,12 +757,6 @@ void setup()
       Serial.print(F(", PWD = "));
       Serial.println(password);
 
-#if DISPLAY_STORED_CREDENTIALS_IN_CP
-    // New. Update Credentials, got from loadConfigData(), to display on CP
-    ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
-                                        WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
-#endif
-
       // Starts an access point
       if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))
         Serial.println(F("Not connected to WiFi but continuing anyway."));
@@ -900,11 +889,7 @@ void setup()
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-#if !USE_LITTLEFS
-  // SPIFFSEditor won't compile when using LittleFS
   server.addHandler(new SPIFFSEditor(http_username, http_password, FileFS));
-#endif
-
   server.serveStatic("/", FileFS, "/").setDefaultFile("index.htm");
 
   server.onNotFound([](AsyncWebServerRequest * request) 

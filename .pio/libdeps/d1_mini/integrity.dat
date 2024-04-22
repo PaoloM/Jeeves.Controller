@@ -1,10 +1,8 @@
 hal9k-dk/ESP8266 REST client SSL@^2.1.0
-wnatth3/WiFiManager@^2.0.16-rc.2
-adafruit/Adafruit Unified Sensor@^1.1.4
 marcoschwartz/LiquidCrystal_I2C@^1.1.4
-khoih-prog/ESPAsync_WiFiManager@^1.11.0
-knolleary/PubSubClient@^2.8
 adafruit/Adafruit BusIO@^1.9.8
-adafruit/DHT sensor library@^1.4.3
 olikraus/U8g2@^2.32.6
-tzapu/WiFiManager@^0.16.0
+adafruit/DHT sensor library@^1.4.3
+adafruit/Adafruit Unified Sensor@^1.1.4
+knolleary/PubSubClient@^2.8
+khoih-prog/ESPAsync_WiFiManager@^1.11.0

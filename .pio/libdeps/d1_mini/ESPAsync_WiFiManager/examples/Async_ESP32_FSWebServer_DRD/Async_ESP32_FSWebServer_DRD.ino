@@ -34,15 +34,11 @@
   #error This code is intended to run only on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.15.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1015000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.11.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1011000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
-
-// To not display stored SSIDs and PWDs on Config Portal, select false. Default is true
-// Even the stored Credentials are not display, just leave them all blank to reconnect and reuse the stored Credentials 
-//#define DISPLAY_STORED_CREDENTIALS_IN_CP        false
 
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -58,13 +54,13 @@ WiFiMulti wifiMulti;
 #define FORMAT_FILESYSTEM false
 
 // LittleFS has higher priority than SPIFFS
-#if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-  #define USE_LITTLEFS    true
-  #define USE_SPIFFS      false
-#elif defined(ARDUINO_ESP32C3_DEV)
-  // For core v1.0.6-, ESP32-C3 only supporting SPIFFS and EEPROM. To use v2.0.0+ for LittleFS
+#if ( ARDUINO_ESP32C3_DEV )
+  // Currently, ESP32-C3 only supporting SPIFFS and EEPROM. Will fix to support LittleFS
   #define USE_LITTLEFS          false
   #define USE_SPIFFS            true
+#else
+  #define USE_LITTLEFS    true
+  #define USE_SPIFFS      false
 #endif
 
 #if USE_LITTLEFS
@@ -74,23 +70,17 @@ WiFiMulti wifiMulti;
   // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
   //#if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
   #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-      #warning Using ESP32 Core 1.0.6 or 2.0.0+
-    #endif
-    
+    #warning Using ESP32 Core 1.0.6 or 2.0.0+
     // The library has been merged into esp32 core from release 1.0.6
-    #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
+    #include <LittleFS.h>
     
     FS* filesystem =      &LittleFS;
     #define FileFS        LittleFS
     #define FS_Name       "LittleFS"
   #else
-    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-      #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
-    #endif
-      
+    #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
     // The library has been merged into esp32 core from release 1.0.6
-    #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
+    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
     
     FS* filesystem =      &LITTLEFS;
     #define FileFS        LITTLEFS
@@ -148,6 +138,14 @@ WiFiMulti wifiMulti;
 //DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 DoubleResetDetector* drd = NULL;
 //////
+
+// SSID and PW for Config Portal
+String ssid = "ESP_" + String((uint32_t)ESP.getEfuseMac(), HEX);
+String password;
+
+// SSID and PW for your Router
+String Router_SSID;
+String Router_Pass;
 
 // From v1.1.0
 #define MIN_AP_PASSWORD_SIZE    8
@@ -222,12 +220,11 @@ bool initialConfig = false;
 #define USE_CLOUDFLARE_NTP          false
 
 #define USING_CORS_FEATURE          true
-
-////////////////////////////////////////////
+//////
 
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
-  // Force DHCP to be true
+// Force DHCP to be true
   #if defined(USE_DHCP_IP)
     #undef USE_DHCP_IP
   #endif
@@ -240,21 +237,13 @@ bool initialConfig = false;
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using DHCP IP
-  #endif
-  
+  #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
-  
 #else
   // Use static IP
-  
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using static IP
-  #endif
+  #warning Using static IP
   
   #ifdef ESP32
     IPAddress stationIP   = IPAddress(192, 168, 2, 232);
@@ -265,9 +254,6 @@ bool initialConfig = false;
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
-
-////////////////////////////////////////////
-
 
 #define USE_CONFIGURABLE_DNS      true
 
@@ -285,20 +271,12 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 // Redundant, for v1.10.0 only
 //#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
-// SSID and PW for Config Portal
-String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-String password;
-
-// SSID and PW for your Router
-String Router_SSID;
-String Router_Pass;
-
 String host = "async-esp32fs";
 
 #define HTTP_PORT     80
 
 AsyncWebServer server(HTTP_PORT);
-AsyncDNSServer dnsServer;
+DNSServer dnsServer;
 
 AsyncEventSource events("/events");
 
@@ -756,7 +734,7 @@ void setup()
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&server, NULL, "AsyncESP32-FSWebServer");
 #else
-  AsyncDNSServer dnsServer;
+  DNSServer dnsServer;
   
   ESPAsync_WiFiManager ESPAsync_wifiManager(&server, &dnsServer, "AsyncESP32-FSWebServer");
 #endif
@@ -866,12 +844,6 @@ void setup()
     Serial.print(ssid);
     Serial.print(F(", PWD = "));
     Serial.println(password);
-
-#if DISPLAY_STORED_CREDENTIALS_IN_CP
-    // New. Update Credentials, got from loadConfigData(), to display on CP
-    ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
-                                        WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
-#endif
 
     // Starts an access point
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))

@@ -46,7 +46,6 @@ addParameter KEYWORD2
 setBreakAfterConfig KEYWORD2
 setCustomHeadElement  KEYWORD2
 setRemoveDuplicateAPs KEYWORD2
-setCredentials	KEYWORD2
 getSSID	KEYWORD2
 getPW	KEYWORD2
 getSSID1	KEYWORD2
@@ -65,13 +64,6 @@ getTimezoneName KEYWORD2
 setTimezoneName KEYWORD2
 getTZ KEYWORD2
 
-#######################################
-
-getChipID	KEYWORD2
-getChipOUI	KEYWORD2
-
-ESP_getChipId	KEYWORD2
-ESP_getChipOUI	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

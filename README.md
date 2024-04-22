@@ -1,5 +1,5 @@
-# Jeeves.Controller
-A Jeeves Smart Home system to control devices viua buttons and rotary encoders
+# Jeeves.BoilerPlate
+A Jeeves Smart Home system baseline template to create a new type of thing
 
 TBD
 
@@ -7,10 +7,16 @@ TBD
 
 ### Supported microcontrollers
 
-The following list have been tested. Other similar boards should work fine, but I have not validated them.
+The following ones have been tested. Other similar boards should work fine, but I have not validated them.
+
+ESP8266
 
 * Wemos D1 mini
 * NodeMCU DevKit v1.0 (ESP8266EX)
+
+ESP32
+
+Not yet implemented
 
 ### Supported sensors and actuators
 

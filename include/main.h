@@ -1,9 +1,30 @@
 // ==========================================================================================
-// Project: Jeeves.Controller
+// Project: Jeeves.BoilerPlate
 // File:    main.h
 // Version: 0.9
 // Date:    2024-03-03
-// License: MIT https://github.com/PaoloM/Jeeves.Controller/blob/main/LICENSE
+//
+// MIT License
+//
+// Copyright (c) 2020-2024 Paolo Marcucci
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 // ==========================================================================================
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -17,9 +38,11 @@
 
 /*--------------------------- Libraries ----------------------------------*/
 // Core libraries (included in framework)
-#if (USING_ESP32_S2 || USING_ESP32_C3) // Using an ESP32 platform
+#if (USING_ESP32_S2 || USING_ESP32_C3) 
+// --- Using an ESP32 platform ---
 
-#else                                // Using an ESP8266 platform
+#else                                
+// --- Using an ESP8266 platform ---
   #include <ArduinoOTA.h>            // Required for OTA updates
   #include <ESP8266mDNS.h>
   #include <ESP8266WiFi.h>           // ESP8266 WiFi driver
@@ -75,8 +98,8 @@ bool ON_SPLASH_SCREEN = false;       // TBD
 
 // Time/NTP
 const char *ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 28800;    //Replace with your GMT offset (seconds) TBD
-const int daylightOffset_sec = 3600; //Replace with your daylight offset (seconds) TBD
+const long gmtOffset_sec = -28800;   //Replace with your GMT offset (seconds) -28800 for PDT
+const int daylightOffset_sec = 3600; //Replace with your daylight offset (seconds) 3600 for one hour
 
 // Loop timer
 unsigned int previousUpdateTime = millis();

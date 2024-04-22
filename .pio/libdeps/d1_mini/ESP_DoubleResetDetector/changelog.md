@@ -12,9 +12,6 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
-  * [Releases v1.3.2](#releases-v132)
-  * [Releases v1.3.1](#releases-v131)
-  * [Releases v1.3.0](#releases-v130)
   * [Releases v1.2.1](#releases-v121)
   * [Releases v1.2.0](#releases-v120)
   * [Releases v1.1.2](#releases-v112)
@@ -28,20 +25,6 @@
 ---
 
 ## Changelog
-
-### Releases v1.3.2
-
-1. Fix ESP32 chipID for example `ConfigOnDoubleReset`
-2. Remove dependency on `LittleFS_esp32` library to prevent PIO error when using new ESP32 core v1.0.6+
-
-### Releases v1.3.1
-
-1. Add waitingForDRD() function to signal in DRD wating period. Check [DRD is waiting for a double reset? #14](https://github.com/khoih-prog/ESP_DoubleResetDetector/discussions/14)
-2. Add example [checkWaitingDRD](https://github.com/khoih-prog/ESP_DoubleResetDetector/tree/master/examples/checkWaitingDRD) to demo how to use the new feature.
-
-### Releases v1.3.0
-
-1. Add support to `ESP32_S3` using [ESP32 core, esp32-s3-support branch, v2.0.2+](https://github.com/espressif/arduino-esp32/tree/esp32-s3-support)
 
 ### Releases v1.2.1
 

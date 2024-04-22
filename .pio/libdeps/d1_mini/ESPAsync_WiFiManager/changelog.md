@@ -12,14 +12,6 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
-  * [Releases v1.15.1](#releases-v1151)
-  * [Releases v1.15.0](#releases-v1150)
-  * [Releases v1.14.1](#releases-v1141)
-  * [Releases v1.14.0](#releases-v1140)
-  * [Releases v1.13.0](#releases-v1130)
-  * [Releases v1.12.2](#releases-v1122)
-  * [Releases v1.12.1](#releases-v1121)
-  * [Releases v1.12.0](#releases-v1120)
   * [Releases v1.11.0](#releases-v1110)
   * [Releases v1.10.0](#releases-v1100)
   * [Releases v1.9.8](#releases-v198)
@@ -54,52 +46,6 @@
 ---
 
 ## Changelog
-
-### Releases v1.15.1
-
-1. Using random channel for softAP without password. Check [fix: using random CH for non-password use too #118](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/118)
-2. Fix bug. Check [fix: ending portal loop without processing its flags #119](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/119)
-3. Add astyle using `allman` style. Restyle the library
-
-
-### Releases v1.15.0
-
-1. Optionally display Credentials (SSIDs, PWDs) in Config Portal. Check [Populate portal wifi with saved credentials #91](https://github.com/khoih-prog/ESP_WiFiManager/discussions/91) and [Prepopulating the configuration with SSID and Password from stored file #115](https://github.com/khoih-prog/ESPAsync_WiFiManager/discussions/115)
-2. Display `Credentials` Hint on Config Portal
-3. Periodic code clean-up
-
-### Releases v1.14.1
-
-1. Remove dependency on ESP_AsyncWebServer, ESPAsyncTCP and AsyncTCP in `library.properties`. Check ["no protocol" error #113](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/113)"
-2. Add notes about manual installation of above-mentioned libraries for `Arduino IDE`
-
-### Releases v1.14.0
-
-1. Fix `ESP32 chipID`. Check [Help for storing variables in memory (non-volatile) #87](https://github.com/khoih-prog/ESP_WiFiManager/discussions/87#discussioncomment-3593028)
-2. Add ESP32 `ESP_getChipOUI()` function
-3. Display new info on Config Portal for ESP32
-4. Remove dependency on `LittleFS_esp32` library to prevent PIO error when using new `ESP32 core v1.0.6+`
-
-### Releases v1.13.0
-
-1. Using AsyncDNSServer instead of DNSServer. Check [Captive Portal hanging depending on active core for AsyncTCP #100](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/100)
-
-
-### Releases v1.12.2
-
-1. Optimize code by using passing by `reference` instead of by `value`
-2. Delete all confusing, function-lacking `minimal` examples
-3. Delete all `Modeless` examples
-4. Display informational warnings only when `_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3`
-
-### Releases v1.12.1
-
-1. Add LittleFS support to `ESP32-C3`.
-2. Use ESP32-core's LittleFS library instead of Lorol's LITTLEFS library for v2.0.0+
-
-### Releases v1.12.0
-
-1. Add support to `ESP32-S3` (`ESP32S3_DEV, ESP32_S3_BOX, UM TINYS3, UM PROS3, UM FEATHERS3`, etc.) using [ESP32 core, esp32-s3-support branch, v2.0.2+](https://github.com/espressif/arduino-esp32/tree/esp32-s3-support)
 
 ### Releases v1.11.0
 

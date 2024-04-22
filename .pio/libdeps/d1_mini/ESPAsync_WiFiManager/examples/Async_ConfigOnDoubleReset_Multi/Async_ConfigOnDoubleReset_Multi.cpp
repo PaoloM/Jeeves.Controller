@@ -96,18 +96,13 @@ bool initialConfig;    // = false;
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using DHCP IP
-  #endif
-  
+  #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
   IPAddress gatewayIP   = IPAddress(192, 168, 1, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #else
   // Use static IP
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using static IP
-  #endif
+  #warning Using static IP
   
   #ifdef ESP32
     IPAddress stationIP   = IPAddress(192, 168, 2, 232);

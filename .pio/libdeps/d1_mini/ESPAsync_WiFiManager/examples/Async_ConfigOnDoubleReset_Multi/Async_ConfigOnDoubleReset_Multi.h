@@ -42,8 +42,8 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.14.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1014000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.11.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1011000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    1
@@ -61,13 +61,13 @@
   extern WiFiMulti wifiMulti;
 
   // LittleFS has higher priority than SPIFFS
-  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-    #define USE_LITTLEFS    true
-    #define USE_SPIFFS      false
-  #elif defined(ARDUINO_ESP32C3_DEV)
-    // For core v1.0.6-, ESP32-C3 only supporting SPIFFS and EEPROM. To use v2.0.0+ for LittleFS
+  #if ( ARDUINO_ESP32C3_DEV )
+    // Currently, ESP32-C3 only supporting SPIFFS and EEPROM. Will fix to support LittleFS
     #define USE_LITTLEFS          false
     #define USE_SPIFFS            true
+  #else
+    #define USE_LITTLEFS    true
+    #define USE_SPIFFS      false
   #endif
 
   #if USE_LITTLEFS
@@ -77,25 +77,19 @@
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
     //#if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
     #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-      #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-        #warning Using ESP32 Core 1.0.6 or 2.0.0+
-      #endif
-      
+      #warning Using ESP32 Core 1.0.6 or 2.0.0+
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
+      #include <LittleFS.h>
       
-      extern FS* filesystem;   // =      &LittleFS;
+      extern FS* filesystem;    // =      &LittleFS;
       #define FileFS        LittleFS
       #define FS_Name       "LittleFS"
     #else
-      #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-        #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
-      #endif
-      
+      #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
+      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
       
-      extern FS* filesystem;   // =      &LITTLEFS;
+      exern FS* filesystem;   // =      &LITTLEFS;
       #define FileFS        LITTLEFS
       #define FS_Name       "LittleFS"
     #endif
@@ -113,6 +107,8 @@
     #define FS_Name       "FFat"
   #endif
   //////
+
+  #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
   #define LED_BUILTIN       2
   #define LED_ON            HIGH
@@ -314,18 +310,13 @@ extern bool initialConfig;    // = false;
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using DHCP IP
-  #endif
-  
+  #warning Using DHCP IP
   extern IPAddress stationIP;   //   = IPAddress(0, 0, 0, 0);
   extern IPAddress gatewayIP;   //   = IPAddress(192, 168, 1, 1);
   extern IPAddress netMask;     //     = IPAddress(255, 255, 255, 0);
 #else
   // Use static IP
-  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
-    #warning Using static IP
-  #endif
+  #warning Using static IP
   
   #ifdef ESP32
     extern IPAddress stationIP;   //   = IPAddress(192, 168, 2, 232);

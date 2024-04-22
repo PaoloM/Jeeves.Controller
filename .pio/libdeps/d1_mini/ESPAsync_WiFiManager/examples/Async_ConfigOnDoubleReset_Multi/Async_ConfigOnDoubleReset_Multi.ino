@@ -128,7 +128,7 @@ void setup()
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "AsyncConfigOnDoubleReset");
 #else
-  AsyncDNSServer dnsServer;
+  DNSServer dnsServer;
 
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "AsyncConfigOnDoubleReset");
 #endif
@@ -246,12 +246,6 @@ void setup()
     //If not specified device will remain in configuration mode until
     //switched off via webserver or device is restarted.
     //ESPAsync_wifiManager.setConfigPortalTimeout(600);
-
-#if DISPLAY_STORED_CREDENTIALS_IN_CP
-    // New. Update Credentials, got from loadConfigData(), to display on CP
-    ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
-                                        WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
-#endif
 
     // Starts an access point
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))

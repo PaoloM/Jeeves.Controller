@@ -484,7 +484,7 @@ boolean PubSubClient::publish_P(const char* topic, const uint8_t* payload, unsig
     unsigned int i;
     uint8_t header;
     unsigned int len;
-    unsigned int expectedLength;
+    int expectedLength;
 
     if (!connected()) {
         return false;
