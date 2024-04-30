@@ -32,36 +32,36 @@
 #include <Arduino.h>
 
 /*--------------------------- Configuration ------------------------------*/
-#include "config.h"                  // Jeeves server address, port
-#include "sensor.h"                  // Sensor-specific data
-#include "strings.h"                 // Messages, etc
+#include "config.h"  // Jeeves server address, port
+#include "sensor.h"  // Sensor-specific data
+#include "strings.h" // Messages, etc
 
 /*--------------------------- Libraries ----------------------------------*/
 // Core libraries (included in framework)
-#if (USING_ESP32_S2 || USING_ESP32_C3) 
+#if (USING_ESP32_S2 || USING_ESP32_C3)
 // --- Using an ESP32 platform ---
 
-#else                                
+#else
 // --- Using an ESP8266 platform ---
-  #include <ArduinoOTA.h>            // Required for OTA updates
-  #include <ESP8266mDNS.h>
-  #include <ESP8266WiFi.h>           // ESP8266 WiFi driver
-  #include <SoftwareSerial.h>        // Allows sensors to avoid the USB serial port
-  #include <SPI.h>
-  #include <Wire.h>
-  #include <WiFiUdp.h>
+#include <ArduinoOTA.h> // Required for OTA updates
+#include <ESP8266mDNS.h>
+#include <ESP8266WiFi.h>    // ESP8266 WiFi driver
+#include <SoftwareSerial.h> // Allows sensors to avoid the USB serial port
+#include <SPI.h>
+#include <Wire.h>
+#include <WiFiUdp.h>
 #endif
 
 // Project-specific libraries
-#include <PubSubClient.h>            // MQTT PubSub support - knolleary/PubSubClient@^2.8
-#include <Adafruit_Sensor.h>         // Universal sensor library - adafruit/Adafruit Unified Sensor@^1.1.4
-#include "RestClient.h"              // ESP8266 REST client SSL by Hal9k https://github.com/Hal9k-dk/REST-test 
-#include <DNSServer.h>               // Required for AP support by https://github.com/tzapu/WiFiManager
-#include <ESP8266WebServer.h>        // Required for AP support by https://github.com/tzapu/WiFiManager
-#include <WiFiManager.h>             // Access point capability by https://github.com/tzapu/WiFiManager
+#include <PubSubClient.h>     // MQTT PubSub support - knolleary/PubSubClient@^2.8
+#include <Adafruit_Sensor.h>  // Universal sensor library - adafruit/Adafruit Unified Sensor@^1.1.4
+#include "RestClient.h"       // ESP8266 REST client SSL by Hal9k https://github.com/Hal9k-dk/REST-test
+#include <DNSServer.h>        // Required for AP support by https://github.com/tzapu/WiFiManager
+#include <ESP8266WebServer.h> // Required for AP support by https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>      // Access point capability by https://github.com/tzapu/WiFiManager
 
-//#include <ESPAsync_WiFiManager.h> // https://github.com/khoih-prog/ESPAsync_WiFiManager
-//#include "RestClient.h" // https://github.com/eduardomarcos/arduino-esp32-restclient
+// #include <ESPAsync_WiFiManager.h> // https://github.com/khoih-prog/ESPAsync_WiFiManager
+// #include "RestClient.h" // https://github.com/eduardomarcos/arduino-esp32-restclient
 
 // AsyncWebServer webServer(80);
 // #if !( USING_ESP32_S2 || USING_ESP32_C3 )
@@ -92,14 +92,14 @@ char LOCATION[50];                   // Room/area where the sensor is located
 #define WIFI_CONNECT_MAX_ATTEMPTS 10 // Number of attempts/intervals to wait
 
 // General
-uint32_t DEVICE_ID;                  // Unique ID from ESP chip ID
-bool ON_SPLASH_SCREEN = false;       // TBD
-#define CMD_RESTART 1;               // TBD
+uint32_t DEVICE_ID;            // Unique ID from ESP chip ID
+bool ON_SPLASH_SCREEN = false; // TBD
+#define CMD_RESTART 1;         // TBD
 
 // Time/NTP
 const char *ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = -28800;   //Replace with your GMT offset (seconds) -28800 for PDT
-const int daylightOffset_sec = 3600; //Replace with your daylight offset (seconds) 3600 for one hour
+const long gmtOffset_sec = -28800;   // Replace with your GMT offset (seconds) -28800 for PDT
+const int daylightOffset_sec = 3600; // Replace with your daylight offset (seconds) 3600 for one hour
 
 // Loop timer
 unsigned int previousUpdateTime = millis();
@@ -107,8 +107,8 @@ unsigned int splashScreenTimer = 0;
 
 /* ----------------- Hardware-specific config ---------------------- */
 /* Serial */
-#define SERIAL_BAUD_RATE 9600        // Speed for USB serial console
-#define ESP_WAKEUP_PIN D0            // To reset ESP8266 after deep sleep
+#define SERIAL_BAUD_RATE 9600 // Speed for USB serial console
+#define ESP_WAKEUP_PIN D0     // To reset ESP8266 after deep sleep
 
 /*--------------------------- Function Signatures ---------------------------*/
 void mqttCallback(char *topic, byte *payload, uint8_t length);
@@ -128,8 +128,8 @@ PubSubClient MQTT_CLIENT(ESP_CLIENT);                                   // MQTT
 RestClient REST_CLIENT = RestClient(JEEVES_SERVER, JEEVES_SERVER_PORT); // Jeeves server connection
 LiquidCrystal_I2C LCD_DISPLAY(HD44780_SCREEN_ADDRESS, 20, 4);           // set the LCD address to 0x27 for a 16 chars and 2 line display
 DHT_Unified DHT_SENSOR(DHT_PIN, DHT_TYPE);                              // Set pin and type for DHT temp/humidity sensors
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C OLED_DISPLAY(U8G2_R0, 
-  SSD1306_PIN_SCL, SSD1306_PIN_SDA, U8X8_PIN_NONE);                     // All Boards without Reset of the Display
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C OLED_DISPLAY(U8G2_R0,
+                                                 SSD1306_PIN_SCL, SSD1306_PIN_SDA, U8X8_PIN_NONE); // All Boards without Reset of the Display
 
 void log_out(char *component, const char *value)
 {
@@ -184,8 +184,8 @@ int8_t read_rotary()
   {
     KY040_STORE <<= 4;
     KY040_STORE |= KY040_PREV_NEXT_CODE;
-    //if (KY040_STORE==0xd42b) return 1;
-    //if (KY040_STORE==0xe817) return -1;
+    // if (KY040_STORE==0xd42b) return 1;
+    // if (KY040_STORE==0xe817) return -1;
     if ((KY040_STORE & 0xff) == 0x2b)
       return -1;
     if ((KY040_STORE & 0xff) == 0x17)
@@ -235,29 +235,29 @@ void mqttSetup()
 void wifiSetup()
 {
   WiFiManager wifiManager;
- // wifiManager.resetSettings(); // uncomment this to reset the device EEPROM
+  // wifiManager.resetSettings(); // uncomment this to reset the device EEPROM
   wifiManager.autoConnect("JeevesConnectAP");
 
-//   Serial.print("\nStarting Async_AutoConnect_ESP8266_minimal on " + String(ARDUINO_BOARD));
-//   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
-// #if (USING_ESP32_S2 || USING_ESP32_C3)
-//   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "Async_AutoConnect");
-// #else
-//   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "Async_AutoConnect");
-// #endif
+  //   Serial.print("\nStarting Async_AutoConnect_ESP8266_minimal on " + String(ARDUINO_BOARD));
+  //   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
+  // #if (USING_ESP32_S2 || USING_ESP32_C3)
+  //   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "Async_AutoConnect");
+  // #else
+  //   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "Async_AutoConnect");
+  // #endif
 
-//   // ESPAsync_wifiManager.resetSettings();   //reset saved settings
-//   // ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192,168,186,1), IPAddress(192,168,186,1), IPAddress(255,255,255,0));
-//   ESPAsync_wifiManager.autoConnect("AutoConnectAP");
-//   if (WiFi.status() == WL_CONNECTED)
-//   {
-//     Serial.print(F("Connected. Local IP: "));
-//     Serial.println(WiFi.localIP());
-//   }
-//   else
-//   {
-//     Serial.println(ESPAsync_wifiManager.getStatus(WiFi.status()));
-//   }
+  //   // ESPAsync_wifiManager.resetSettings();   //reset saved settings
+  //   // ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192,168,186,1), IPAddress(192,168,186,1), IPAddress(255,255,255,0));
+  //   ESPAsync_wifiManager.autoConnect("AutoConnectAP");
+  //   if (WiFi.status() == WL_CONNECTED)
+  //   {
+  //     Serial.print(F("Connected. Local IP: "));
+  //     Serial.println(WiFi.localIP());
+  //   }
+  //   else
+  //   {
+  //     Serial.println(ESPAsync_wifiManager.getStatus(WiFi.status()));
+  //   }
 }
 
 /*--------------------------- SERIAL ---------------------------------------*/
@@ -294,7 +294,7 @@ void otaSetup()
   // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
 
   ArduinoOTA.onStart([]()
-    {
+                     {
       char s[255];
 
       String type;
@@ -309,21 +309,19 @@ void otaSetup()
 
       // NOTE: if updating FS this would be the place to unmount FS using FS.end()
       sprintf(s, STR_OTA_START_UPDATE_MESSAGE, type.c_str());
-      log_out(STR_OTA_LOG_PREFIX, s);
-    });
+      log_out(STR_OTA_LOG_PREFIX, s); });
 
   ArduinoOTA.onEnd([]()
-    { log_out(STR_OTA_LOG_PREFIX, STR_OTA_END_UPDATE_MESSAGE); });
+                   { log_out(STR_OTA_LOG_PREFIX, STR_OTA_END_UPDATE_MESSAGE); });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
-    {
+                        {
       char s[255];
       sprintf(s, STR_OTA_UPDATE_PROGRESS_FORMAT, (progress / (total / 100)));
-      log_out(STR_OTA_LOG_PREFIX, s);
-    });
+      log_out(STR_OTA_LOG_PREFIX, s); });
 
   ArduinoOTA.onError([](ota_error_t error)
-    {
+                     {
       char se[255];
       if (error == OTA_AUTH_ERROR) 
         sprintf(se, STR_OTA_ERROR_MESSAGE_FORMAT, error, STR_OTA_ERROR_AUTH_FAILED);
@@ -335,8 +333,7 @@ void otaSetup()
         sprintf(se, STR_OTA_ERROR_MESSAGE_FORMAT, error, STR_OTA_ERROR_RECEIVE_FAILED);
       else if (error == OTA_END_ERROR)
         sprintf(se, STR_OTA_ERROR_MESSAGE_FORMAT, error, STR_OTA_ERROR_END_FAILED);
-      log_out(STR_OTA_LOG_PREFIX, se);
-    });
+      log_out(STR_OTA_LOG_PREFIX, se); });
 
   ArduinoOTA.begin();
 }
@@ -344,7 +341,7 @@ void otaSetup()
 /*--------------------------- TIME/NTP ---------------------------------------*/
 void timeSetup()
 {
-  //init and get the time
+  // init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 }
 
@@ -354,12 +351,17 @@ void setup()
   DEVICE_ID = ESP.getChipId(); // Get the unique ID of the ESP8266 chip
 
   serialSetup();
-  wifiSetup();
-  timeSetup();
-  otaSetup();
-  mqttSetup();
+  if (USE_WIFI)
+  {
+    wifiSetup();
+    timeSetup();
+    otaSetup();
+    if (USE_MQTT)
+      mqttSetup();
+  }
   sensorSetup();
-  sensorMqttSetup();
+  if (USE_MQTT)
+    sensorMqttSetup();
 }
 
 void loop()
@@ -368,43 +370,53 @@ void loop()
   // from https://www.best-microcontroller-projects.com/rotary-encoder.html
   static int8_t c, val;
 
-  if ((val = read_rotary()))
+  if (SENSOR_KY040)
   {
-    c += val;
-
-    if (KY040_PREV_NEXT_CODE == 0x0b)
+    if ((val = read_rotary()))
     {
-      KY040_STATUS_CURRENT = KY040_STATUS_GOINGUP;
+      c += val;
+
+      if (KY040_PREV_NEXT_CODE == 0x0b)
+      {
+        KY040_STATUS_CURRENT = KY040_STATUS_GOINGUP;
+      }
+
+      if (KY040_PREV_NEXT_CODE == 0x07)
+      {
+        KY040_STATUS_CURRENT = KY040_STATUS_GOINGDOWN;
+      }
     }
 
-    if (KY040_PREV_NEXT_CODE == 0x07)
-    {
-      KY040_STATUS_CURRENT = KY040_STATUS_GOINGDOWN;
-    }
-  }
-
-  if (digitalRead(KY040_PIN_BUTTON) == 0)
-  {
-
-    delay(10);
     if (digitalRead(KY040_PIN_BUTTON) == 0)
     {
-      KY040_STATUS_CURRENT = KY040_STATUS_PRESSED;
-      while (digitalRead(KY040_PIN_BUTTON) == 0)
-        ;
-    }
-  }
-  // - end of KY040 debounce code
 
-  if (WiFi.status() == WL_CONNECTED)
+      delay(10);
+      if (digitalRead(KY040_PIN_BUTTON) == 0)
+      {
+        KY040_STATUS_CURRENT = KY040_STATUS_PRESSED;
+        while (digitalRead(KY040_PIN_BUTTON) == 0)
+          ;
+      }
+    }
+    // - end of KY040 debounce code
+  }
+
+  if (USE_WIFI)
   {
-    if (!MQTT_CLIENT.connected())
+    if (WiFi.status() == WL_CONNECTED)
     {
-      reconnectMqtt();
+      if (USE_MQTT)
+      {
+        if (!MQTT_CLIENT.connected())
+        {
+          reconnectMqtt();
+        }
+      }
     }
   }
 
-  MQTT_CLIENT.loop(); // process any outstanding MQTT messages
+  if (USE_MQTT)
+    MQTT_CLIENT.loop(); // process any outstanding MQTT messages
 
   sensorUpdateReadingsQuick(); // get the data from sensors at max speed
 
@@ -423,7 +435,8 @@ void loop()
     splashScreenTimer = millis();
   }
 
-  ArduinoOTA.handle(); // see if there is an OTA update request
+  if (USE_WIFI)
+    ArduinoOTA.handle(); // see if there is an OTA update request
 }
 
 void reconnectMqtt()

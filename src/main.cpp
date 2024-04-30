@@ -27,11 +27,12 @@
 // SOFTWARE.
 // ==========================================================================================
 
-#define SENSOR_TYPE "Switches"    // type of sensor
-#define VERSION     "0.1"         // firmware version
-#define MAIN_TOPIC  "generic"     // default MQTT topic (can be empty)
+#define SENSOR_TYPE "Switches" // type of sensor
+#define VERSION "0.1"          // firmware version
+#define MAIN_TOPIC "generic"   // default MQTT topic (can be empty)
 
 #include "main.h"
+#include <ESP8266HTTPClient.h>
 
 // Global variables -------------------------------------------------------------------------
 int counterValue = 0; // generic counter
@@ -47,6 +48,16 @@ float DHT_TEMPERATURE;
 float DHT_HUMIDITY;
 
 // TODO: add global variables here
+
+uint8_t BlackButton = D1;
+uint8_t BlackLed = D3;
+bool BlackStatus = false;
+uint8_t RedButton = D2;
+uint8_t RedLed = D4;
+bool RedStatus = false;
+uint8_t YellowButton = D5;
+uint8_t YellowLed = D7;
+bool YellowStatus = false;
 
 // MQTT sensor specific topics to report values ---------------------------------------------
 char sensor_mqtt_topic[58]; // default MQTT location/topic, change as needed
@@ -65,7 +76,7 @@ void sensorSetup()
   IPAddress ip = WiFi.localIP();
 
   if (SENSOR_SSD1306) // - SSD1306 I2C OLED DISPLAY
-  { 
+  {
     OLED_DISPLAY.begin();
 
     // Show splash screen
@@ -124,7 +135,12 @@ void sensorSetup()
   }
 
   // TODO: Add other sensor-specific initialization code here
-  /* code */
+  pinMode(BlackButton, INPUT);
+  pinMode(BlackLed, OUTPUT);
+  pinMode(RedButton, INPUT);
+  pinMode(RedLed, OUTPUT);
+  pinMode(YellowButton, INPUT);
+  pinMode(YellowLed, OUTPUT);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -132,7 +148,7 @@ void sensorSetup()
 // ------------------------------------------------------------------------------------------
 void sensorMqttSetup()
 {
-  if (USE_GENERIC)
+  if (USE_MQTT)
   {
     sprintf(sensor_mqtt_topic, "%s/%s", LOCATION, MAIN_TOPIC); // default MQTT location/topic
   }
@@ -165,7 +181,38 @@ void sensorUpdateReadings()
   }
 
   // TODO: Perform measurements every DELAY_MS milliseconds
-  /* code */
+
+  if (digitalRead(BlackButton) == HIGH)
+  {
+    Serial.println("Black pressed");
+    BlackStatus = !BlackStatus;
+    digitalWrite(BlackLed, BlackStatus ? HIGH : LOW);
+     if (BlackStatus) // https://randomnerdtutorials.com/esp8266-nodemcu-http-get-post-arduino/
+    {
+      WiFiClient client;
+      HTTPClient http;
+
+      String serverPath = "http://jeeves:8080/api/devices/studio/studiodisplay/toggle";
+
+      // Your Domain name with URL path or IP address with path
+      http.begin(client, serverPath.c_str());
+  
+      // Send HTTP GET request
+      int httpResponseCode = http.GET();
+    }
+  }
+  if (digitalRead(RedButton) == HIGH)
+  {
+    Serial.println("Red pressed");
+    RedStatus = !RedStatus;
+    digitalWrite(RedLed, RedStatus ? HIGH : LOW);
+  }
+  if (digitalRead(YellowButton) == HIGH)
+  {
+    Serial.println("Yellow pressed");
+    YellowStatus = !YellowStatus;
+    digitalWrite(YellowLed, YellowStatus ? HIGH : LOW);
+  }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -198,7 +245,7 @@ void sensorUpdateReadingsQuick()
   }
 
   // TODO: Perform measurements on every loop
-  /* code */
+
 }
 
 // ------------------------------------------------------------------------------------------
@@ -209,35 +256,38 @@ void sensorReportToMqtt()
   char t[255];
   bool emitTimestamp = false;
 
-  if (USE_GENERIC)
+  if (USE_MQTT)
   {
-    sendToMqttTopicAndValue(sensor_mqtt_topic, String(counterValue)); // generic message
-  }
+    if (USE_GENERIC)
+    {
+      sendToMqttTopicAndValue(sensor_mqtt_topic, String(counterValue)); // generic message
+    }
 
-  if (SENSOR_DHT) // - DHTxx temperature and humidity readings
-  {
-    sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_DHT_TEMPERATURE);
-    sendToMqttTopicAndValue(t, String(DHT_TEMPERATURE));
-    sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_DHT_HUMIDITY);
-    sendToMqttTopicAndValue(t, String(DHT_HUMIDITY));
-    emitTimestamp = true; // mark this measurement with a timestamp
-  }
+    if (SENSOR_DHT) // - DHTxx temperature and humidity readings
+    {
+      sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_DHT_TEMPERATURE);
+      sendToMqttTopicAndValue(t, String(DHT_TEMPERATURE));
+      sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_DHT_HUMIDITY);
+      sendToMqttTopicAndValue(t, String(DHT_HUMIDITY));
+      emitTimestamp = true; // mark this measurement with a timestamp
+    }
 
-  // TODO: send all the required values to the MQTT broker
-  /* code */
+    // TODO: send all the required values to the MQTT broker
+    /* code */
 
-  if (emitTimestamp) // Common timestamp for all MQTT topics pub
-  {
-    time_t temp;
-    struct tm *timeptr;
-    char s[80];
+    if (emitTimestamp) // Common timestamp for all MQTT topics pub
+    {
+      time_t temp;
+      struct tm *timeptr;
+      char s[80];
 
-    temp = time(NULL);
-    timeptr = localtime(&temp);
+      temp = time(NULL);
+      timeptr = localtime(&temp);
 
-    strftime(s, sizeof(s), "%Y-%m-%d %T", timeptr);
-    sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_TIMESTAMP);
-    sendToMqttTopicAndValue(t, s);
+      strftime(s, sizeof(s), "%Y-%m-%d %T", timeptr);
+      sprintf(t, "%s/%s", LOCATION, STR_SENSOR_TOPIC_TIMESTAMP);
+      sendToMqttTopicAndValue(t, s);
+    }
   }
 }
 
@@ -261,7 +311,7 @@ void sensorReportToSerial()
 void sensorUpdateDisplay()
 {
   if (!ON_SPLASH_SCREEN) // update the display only if the splash screen has been dismissed
-  { 
+  {
     if (SENSOR_SSD1306)
     {
       OLED_DISPLAY.clearBuffer();

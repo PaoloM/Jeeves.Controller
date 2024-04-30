@@ -28,8 +28,7 @@
 // ==========================================================================================
 
 #define     DEBUG                    true                   // true to show messages on the Serial monitor
-#define     USE_GENERIC              true                   // use the generic topic
-#define     DELAY_MS                 10000                  // milliseconds between sensor readings
+#define     DELAY_MS                 200                    // milliseconds between sensor readings
 #define     SPLASH_SCREEN_DELAY      10000                  // milliseconds before splash screen dismissal
 
 // Template info (do not change after creating the initial structure)
@@ -39,6 +38,11 @@
 // Jeeves server connection
 const char* JEEVES_SERVER          = "jeeves";              // IP address of your Jeeves server
 int         JEEVES_SERVER_PORT     = 8080;                  // Listening port of your Jeeves server
+
+// Communications
+#define     USE_WIFI                 true
+#define     USE_MQTT                 false
+#define     USE_GENERIC              false                  // use the generic MQTT topic
 
 // Onboard sensors configuration
 #define     SENSOR_SSD1306           false                  // use the SSD1306 124x64 OLED display
