@@ -141,6 +141,10 @@ void sensorSetup()
   pinMode(RedLed, OUTPUT);
   pinMode(YellowButton, INPUT);
   pinMode(YellowLed, OUTPUT);
+
+  digitalWrite(BlackLed, HIGH);
+  digitalWrite(RedLed, HIGH);
+  digitalWrite(YellowLed, HIGH);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -182,37 +186,7 @@ void sensorUpdateReadings()
 
   // TODO: Perform measurements every DELAY_MS milliseconds
 
-  if (digitalRead(BlackButton) == HIGH)
-  {
-    Serial.println("Black pressed");
-    BlackStatus = !BlackStatus;
-    digitalWrite(BlackLed, BlackStatus ? HIGH : LOW);
-     if (BlackStatus) // https://randomnerdtutorials.com/esp8266-nodemcu-http-get-post-arduino/
-    {
-      WiFiClient client;
-      HTTPClient http;
 
-      String serverPath = "http://jeeves:8080/api/devices/studio/studiodisplay/toggle";
-
-      // Your Domain name with URL path or IP address with path
-      http.begin(client, serverPath.c_str());
-  
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-    }
-  }
-  if (digitalRead(RedButton) == HIGH)
-  {
-    Serial.println("Red pressed");
-    RedStatus = !RedStatus;
-    digitalWrite(RedLed, RedStatus ? HIGH : LOW);
-  }
-  if (digitalRead(YellowButton) == HIGH)
-  {
-    Serial.println("Yellow pressed");
-    YellowStatus = !YellowStatus;
-    digitalWrite(YellowLed, YellowStatus ? HIGH : LOW);
-  }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -245,7 +219,35 @@ void sensorUpdateReadingsQuick()
   }
 
   // TODO: Perform measurements on every loop
+  int blackread = digitalRead(BlackButton);
+  delay(50);
+  if (digitalRead(BlackButton) != blackread)
+  {
+    Serial.println("Black released");
+    BlackStatus = !BlackStatus;
+    
+    if (BlackStatus) // https://randomnerdtutorials.com/esp8266-nodemcu-http-get-post-arduino/
+    {
 
+      digitalWrite(BlackLed, LOW);
+  
+      WiFiClient client;
+      HTTPClient http;
+
+      String serverPath = "http://jeeves:8080/api/devices/studio/studiodisplay/toggle";
+
+      // Your Domain name with URL path or IP address with path
+      http.begin(client, serverPath.c_str());
+  
+      // Send HTTP GET request
+      int httpResponseCode = http.GET();
+    }
+    else
+    {
+            digitalWrite(BlackLed, HIGH);
+
+    }
+  }
 }
 
 // ------------------------------------------------------------------------------------------
